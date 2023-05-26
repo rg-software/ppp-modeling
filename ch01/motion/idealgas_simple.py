@@ -1,44 +1,33 @@
 import turtle
-import time
 import math
-import random
+from random import uniform
 from dataclasses import dataclass
 
 WIDTH = 600
 HEIGHT = 400
-VELOCITY = 5
+VELOCITY = 10
 R = 10
 MARGIN = 50
-N = 20
-
-done = False
+SLEEP_MS = 20
+N = 20  # number of molecules in our vessel
 
 left_wall, right_wall = -WIDTH / 2 + R, WIDTH / 2 - R
 top_wall, bottom_wall = HEIGHT / 2 - R, -HEIGHT / 2 + R
 
 
-def set_done():
-    global done
-    done = True
+@dataclass
+class SimState:
+    done: bool
 
+    def set_done(self):
+        self.done = True
 
-def draw_vessel():
-    m = turtle.Turtle()
-    m.hideturtle()
-    m.penup()
-    m.goto(-WIDTH / 2, -HEIGHT / 2)
-    m.pendown()
-    m.sety(HEIGHT / 2)
-    m.setx(WIDTH / 2)
-    m.sety(-HEIGHT / 2)
-    m.setx(-WIDTH / 2)
-
-
-turtle.Screen().setup(WIDTH + MARGIN, HEIGHT + MARGIN)
-turtle.tracer(0, 0)
-turtle.title("Ideal gas (simple version)")
-turtle.listen()
-turtle.onkey(set_done, "space")
+    @classmethod
+    def setup(cls):
+        r = cls(False)
+        turtle.listen()
+        turtle.onkey(r.set_done, "space")
+        return r
 
 
 @dataclass
@@ -56,25 +45,49 @@ class Molecule:
         if not bottom_wall < self.m.ycor() < top_wall:
             self.vy *= -1
 
+    @classmethod
+    def create(cls):
+        m = turtle.Turtle()
+        m.shape("circle")
+        m.penup()
+        m.goto(uniform(left_wall, right_wall), uniform(bottom_wall, top_wall))
 
-def make_molecule():
+        angle = uniform(0, 2 * math.pi)
+        return cls(m, VELOCITY * math.cos(angle), VELOCITY * math.sin(angle))
+
+
+def setup_screen(title):
+    turtle.Screen().setup(WIDTH + MARGIN, HEIGHT + MARGIN)
+    turtle.tracer(0, 0)
+    turtle.title(title)
+
+
+def draw_vessel():
     m = turtle.Turtle()
-    m.shape("circle")
+    m.hideturtle()
     m.penup()
-    m.goto(random.uniform(left_wall, right_wall), random.uniform(bottom_wall, top_wall))
+    m.goto(-WIDTH / 2, -HEIGHT / 2)
+    m.pendown()
+    m.sety(HEIGHT / 2)
+    m.setx(WIDTH / 2)
+    m.sety(-HEIGHT / 2)
+    m.setx(-WIDTH / 2)
 
-    angle = random.uniform(0, 2 * math.pi)
-    return Molecule(m, VELOCITY * math.cos(angle), VELOCITY * math.sin(angle))
 
-
+sim_state = SimState.setup()
+setup_screen("Ideal gas (simple version)")
 draw_vessel()
-molecules = [make_molecule() for _ in range(N)]
+molecules = [Molecule.create() for _ in range(N)]
 
-while not done:
-    for m in molecules:
-        m.move()
+
+def tick():
+    if not sim_state.done:
+        for m in molecules:
+            m.move()
 
     turtle.update()
-    time.sleep(0.01)
+    turtle.ontimer(tick, SLEEP_MS)
 
+
+tick()
 turtle.done()

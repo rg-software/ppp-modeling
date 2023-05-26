@@ -1,11 +1,10 @@
 import turtle
-import time
 import math
-import random
+from random import uniform
 
 WIDTH = 600
 HEIGHT = 400
-VELOCITY = 5
+VELOCITY = 10
 R = 10
 MARGIN = 50
 
@@ -39,22 +38,27 @@ m.sety(-HEIGHT / 2)
 m.setx(-WIDTH / 2)
 m.penup()
 
-m.goto(random.uniform(left_wall, right_wall), random.uniform(bottom_wall, top_wall))
+m.goto(uniform(left_wall, right_wall), uniform(bottom_wall, top_wall))
 
-angle = random.uniform(0, 2 * math.pi)
+angle = uniform(0, 2 * math.pi)
 vx = VELOCITY * math.cos(angle)
 vy = VELOCITY * math.sin(angle)
 
-while not done:
-    m.goto(m.xcor() + vx, m.ycor() + vy)
 
-    if not left_wall < m.xcor() < right_wall:
-        vx *= -1
+def tick():
+    if not done:
+        global vx, vy
+        m.goto(m.xcor() + vx, m.ycor() + vy)
 
-    if not bottom_wall < m.ycor() < top_wall:
-        vy *= -1
+        if not left_wall < m.xcor() < right_wall:
+            vx *= -1
 
-    turtle.update()
-    time.sleep(0.01)
+        if not bottom_wall < m.ycor() < top_wall:
+            vy *= -1
 
+        turtle.update()
+        turtle.ontimer(tick, 20)
+
+
+tick()
 turtle.done()
