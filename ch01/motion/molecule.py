@@ -4,7 +4,7 @@ from random import uniform
 
 WIDTH = 600
 HEIGHT = 400
-VELOCITY = 10
+V = 10
 R = 10
 MARGIN = 50
 
@@ -41,8 +41,8 @@ m.penup()
 m.goto(uniform(left_wall, right_wall), uniform(bottom_wall, top_wall))
 
 angle = uniform(0, 2 * math.pi)
-vx = VELOCITY * math.cos(angle)
-vy = VELOCITY * math.sin(angle)
+vx = V * math.cos(angle)
+vy = V * math.sin(angle)
 
 
 def tick():
