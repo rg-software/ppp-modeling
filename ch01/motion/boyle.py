@@ -5,8 +5,7 @@ from dataclasses import dataclass
 
 WIDTH = 600
 HEIGHT = 400
-MIN_V = 5
-MAX_V = 15
+V = 10
 R = 10
 MARGIN = 50
 SLEEP_MS = 20
@@ -19,20 +18,23 @@ top_wall, bottom_wall = HEIGHT / 2 - R, -HEIGHT / 2 + R
 @dataclass
 class SimState:
     done: bool
+    delta_p: float
+    delta_t: int
 
     def set_done(self):
         self.done = True
 
+    def pressure(self):
+        area = 2 * (top_wall - bottom_wall + right_wall - left_wall)
+        force = self.delta_p / self.delta_t
+        return force / area
+
     @classmethod
     def setup(cls):
-        r = cls(False)
+        r = cls(False, 0, 0)
         turtle.listen()
         turtle.onkey(r.set_done, "space")
         return r
-
-
-def clamp(v, min_v, max_v):
-    return min(max(min_v, v), max_v)
 
 
 @dataclass
@@ -46,12 +48,11 @@ class Molecule:
 
         if not left_wall < self.m.xcor() < right_wall:
             self.vx *= -1
+            sim_state.delta_p += abs(self.vx)
 
         if not bottom_wall < self.m.ycor() < top_wall:
             self.vy *= -1
-
-        self.m.setx(clamp(self.m.xcor(), left_wall + 1, right_wall - 1))
-        self.m.sety(clamp(self.m.ycor(), bottom_wall + 1, top_wall - 1))
+            sim_state.delta_p += abs(self.vy)
 
     @classmethod
     def create(cls):
@@ -61,46 +62,7 @@ class Molecule:
         m.goto(uniform(left_wall, right_wall), uniform(bottom_wall, top_wall))
 
         angle = uniform(0, 2 * math.pi)
-        v = uniform(MIN_V, MAX_V)
-        return cls(m, v * math.cos(angle), v * math.sin(angle))
-
-
-def balls_collide(b1, b2):
-    d = math.sqrt((b1.m.xcor() - b2.m.xcor()) ** 2 + (b1.m.ycor() - b2.m.ycor()) ** 2)
-    return d <= 2 * R
-
-
-def process_collision(b1, b2):
-    a = math.atan2(b2.m.ycor() - b1.m.ycor(), b2.m.xcor() - b1.m.xcor())
-    A1n = math.atan2(b1.vy, b1.vx) - a
-    A2n = math.atan2(b2.vy, b2.vx) - a
-
-    v1 = math.sqrt(b1.vx ** 2 + b1.vy ** 2)
-    v2 = math.sqrt(b2.vx ** 2 + b2.vy ** 2)
-
-    vr1 = v1 * math.cos(A1n)
-    vt1 = v1 * math.sin(A1n)
-
-    vr2 = v2 * math.cos(A2n)
-    vt2 = v2 * math.sin(A2n)
-
-    # m1, m2 = b1.mass(), b2.mass()
-    m1 = m2 = math.pi * (R ** 2)
-
-    vr1n = (vr1 * (m1 - m2) + 2 * m2 * vr2) / (m1 + m2)
-    vr2n = vr1 + vr1n - vr2
-
-    v1n = math.sqrt(vr1n ** 2 + vt1 ** 2)
-    v2n = math.sqrt(vr2n ** 2 + vt2 ** 2)
-
-    A1nn = math.atan2(vt1, vr1n) + a
-    A2nn = math.atan2(vt2, vr2n) + a
-
-    b1.vx = v1n * math.cos(A1nn)
-    b1.vy = v1n * math.sin(A1nn)
-
-    b2.vx = v2n * math.cos(A2nn)
-    b2.vy = v2n * math.sin(A2nn)
+        return cls(m, V * math.cos(angle), V * math.sin(angle))
 
 
 def setup_screen(title):
@@ -122,7 +84,7 @@ def draw_vessel():
 
 
 sim_state = SimState.setup()
-setup_screen("Very ideal gas")
+setup_screen("Boyle-Mariotte's law")
 draw_vessel()
 molecules = [Molecule.create() for _ in range(N)]
 
@@ -132,10 +94,11 @@ def tick():
         for m in molecules:
             m.move()
 
-        for i in range(len(molecules)):
-            for j in range(0, i):
-                if balls_collide(molecules[i], molecules[j]):
-                    process_collision(molecules[i], molecules[j])
+        sim_state.delta_t += 1
+
+        if sim_state.delta_t % 100 == 0:
+            vol = (top_wall - bottom_wall) * (right_wall - left_wall)
+            print(sim_state.pressure() * vol)
 
         turtle.update()
         turtle.ontimer(tick, SLEEP_MS)

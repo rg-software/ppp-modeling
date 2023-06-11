@@ -85,8 +85,8 @@ def tick():
         for m in molecules:
             m.move()
 
-    turtle.update()
-    turtle.ontimer(tick, SLEEP_MS)
+        turtle.update()
+        turtle.ontimer(tick, SLEEP_MS)
 
 
 tick()
