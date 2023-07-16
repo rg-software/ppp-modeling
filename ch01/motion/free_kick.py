@@ -26,26 +26,8 @@ class SimState:
     def setup(cls):
         r = cls(False)
         turtle.listen()
-        turtle.onkey(r.set_done, "space")
+        turtle.onkeypress(r.set_done, "space")
         return r
-
-
-def setup_screen(title):
-    turtle.Screen().setup(WIDTH + MARGIN, HEIGHT + MARGIN)
-    turtle.tracer(0, 0)
-    turtle.title(title)
-
-
-def draw_vessel():
-    m = turtle.Turtle()
-    m.hideturtle()
-    m.penup()
-    m.goto(-WIDTH / 2, -HEIGHT / 2)
-    m.pendown()
-    m.sety(HEIGHT / 2)
-    m.setx(WIDTH / 2)
-    m.sety(-HEIGHT / 2)
-    m.setx(-WIDTH / 2)
 
 
 @dataclass
@@ -65,7 +47,7 @@ class Ball:
             self.vy *= -1
 
     def mass(self):
-        return math.pi * (self.r ** 2)
+        return math.pi * (self.r**2)
 
     @classmethod
     def create(cls):
@@ -83,6 +65,24 @@ class Ball:
         return Ball(m, v * math.cos(angle), v * math.sin(angle), r)
 
 
+def setup_screen(title):
+    turtle.setup(WIDTH + MARGIN, HEIGHT + MARGIN)
+    turtle.tracer(0, 0)
+    turtle.title(title)
+
+
+def draw_vessel():
+    m = turtle.Turtle()
+    m.hideturtle()
+    m.penup()
+    m.goto(-WIDTH / 2, -HEIGHT / 2)
+    m.pendown()
+    m.sety(HEIGHT / 2)
+    m.setx(WIDTH / 2)
+    m.sety(-HEIGHT / 2)
+    m.setx(-WIDTH / 2)
+
+
 def balls_collide(b1, b2):
     d = math.sqrt((b1.m.xcor() - b2.m.xcor()) ** 2 + (b1.m.ycor() - b2.m.ycor()) ** 2)
     return d <= b1.r + b2.r
@@ -93,8 +93,8 @@ def process_collision(b1, b2):
     A1n = math.atan2(b1.vy, b1.vx) - a
     A2n = math.atan2(b2.vy, b2.vx) - a
 
-    v1 = math.sqrt(b1.vx ** 2 + b1.vy ** 2)
-    v2 = math.sqrt(b2.vx ** 2 + b2.vy ** 2)
+    v1 = math.sqrt(b1.vx**2 + b1.vy**2)
+    v2 = math.sqrt(b2.vx**2 + b2.vy**2)
 
     vr1 = v1 * math.cos(A1n)
     vt1 = v1 * math.sin(A1n)
@@ -106,8 +106,8 @@ def process_collision(b1, b2):
     vr1n = (vr1 * (m1 - m2) + 2 * m2 * vr2) / (m1 + m2)
     vr2n = vr1 + vr1n - vr2
 
-    v1n = math.sqrt(vr1n ** 2 + vt1 ** 2)
-    v2n = math.sqrt(vr2n ** 2 + vt2 ** 2)
+    v1n = math.sqrt(vr1n**2 + vt1**2)
+    v2n = math.sqrt(vr2n**2 + vt2**2)
 
     A1nn = math.atan2(vt1, vr1n) + a
     A2nn = math.atan2(vt2, vr2n) + a
@@ -123,17 +123,17 @@ sim_state = SimState.setup()
 setup_screen("Free kick")
 draw_vessel()
 
-b1 = Ball.create()
-b2 = Ball.create()
+ball1 = Ball.create()
+ball2 = Ball.create()
 
 
 def tick():
     if not sim_state.done:
-        b1.move()
-        b2.move()
+        ball1.move()
+        ball2.move()
 
-        if balls_collide(b1, b2):
-            process_collision(b1, b2)
+        if balls_collide(ball1, ball2):
+            process_collision(ball1, ball2)
 
         turtle.update()
         turtle.ontimer(tick, SLEEP_MS)

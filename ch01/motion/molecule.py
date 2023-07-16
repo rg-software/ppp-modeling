@@ -9,9 +9,8 @@ R = 10
 MARGIN = 50
 
 done = False
-
-left_wall, right_wall = -WIDTH / 2 + R, WIDTH / 2 - R
-top_wall, bottom_wall = HEIGHT / 2 - R, -HEIGHT / 2 + R
+right_wall = WIDTH / 2 - R
+top_wall = HEIGHT / 2 - R
 
 
 def set_done():
@@ -19,11 +18,12 @@ def set_done():
     done = True
 
 
-turtle.Screen().setup(WIDTH + MARGIN, HEIGHT + MARGIN)
+turtle.setup(WIDTH + MARGIN, HEIGHT + MARGIN)
 turtle.tracer(0, 0)
 turtle.title("A molecule of gas")
+
 turtle.listen()
-turtle.onkey(set_done, "space")
+turtle.onkeypress(set_done, "space")
 
 m = turtle.Turtle()
 m.shape("circle")
@@ -38,7 +38,7 @@ m.sety(-HEIGHT / 2)
 m.setx(-WIDTH / 2)
 m.penup()
 
-m.goto(uniform(left_wall, right_wall), uniform(bottom_wall, top_wall))
+m.goto(uniform(-right_wall, right_wall), uniform(-top_wall, top_wall))
 
 angle = uniform(0, 2 * math.pi)
 vx = V * math.cos(angle)
@@ -50,10 +50,10 @@ def tick():
         global vx, vy
         m.goto(m.xcor() + vx, m.ycor() + vy)
 
-        if not left_wall < m.xcor() < right_wall:
+        if abs(m.xcor()) > right_wall:
             vx *= -1
 
-        if not bottom_wall < m.ycor() < top_wall:
+        if abs(m.ycor()) > top_wall:
             vy *= -1
 
         turtle.update()

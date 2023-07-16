@@ -13,8 +13,8 @@ MARGIN = 50
 SLEEP_MS = 20
 N = 20  # number of molecules in our vessel
 
-left_wall, right_wall = -WIDTH / 2 + R, WIDTH / 2 - R
-top_wall, bottom_wall = HEIGHT / 2 - R, -HEIGHT / 2 + R
+right_wall = WIDTH / 2 - R
+top_wall = HEIGHT / 2 - R
 
 
 @dataclass
@@ -28,7 +28,7 @@ class SimState:
     def setup(cls):
         r = cls(False)
         turtle.listen()
-        turtle.onkey(r.set_done, "space")
+        turtle.onkeypress(r.set_done, "space")
         return r
 
 
@@ -42,17 +42,17 @@ class Molecule:
     def move(self):
         self.m.goto(self.m.xcor() + self.vx, self.m.ycor() + self.vy)
 
-        if not left_wall < self.m.xcor() < right_wall:
+        if abs(self.m.xcor()) > right_wall:
             self.vx *= -1
 
-        if not bottom_wall < self.m.ycor() < top_wall:
+        if abs(self.m.ycor()) > top_wall:
             self.vy *= -1
 
-        near_hole = -R_HOLE + R < self.m.ycor() < R_HOLE - R
-        flies_right = -R < self.m.xcor() < 0 and self.vx > 0
-        flies_left = 0 < self.m.xcor() < R and self.vx < 0
+        near_hole = abs(self.m.ycor()) <= R_HOLE - R
+        moves_right = -R < self.m.xcor() < 0 and self.vx > 0
+        moves_left = 0 < self.m.xcor() < R and self.vx < 0
 
-        if not near_hole and (flies_left or flies_right):
+        if not near_hole and (moves_left or moves_right):
             self.vx *= -1
 
     @classmethod
@@ -61,14 +61,14 @@ class Molecule:
         m.shape("circle")
         m.color(color)
         m.penup()
-        m.goto(uniform(left, right), uniform(bottom_wall, top_wall))
+        m.goto(uniform(left, right), uniform(-top_wall, top_wall))
 
         angle = uniform(0, 2 * math.pi)
         return cls(m, v, v * math.cos(angle), v * math.sin(angle))
 
 
 def setup_screen(title):
-    turtle.Screen().setup(WIDTH + MARGIN, HEIGHT + MARGIN)
+    turtle.setup(WIDTH + MARGIN, HEIGHT + MARGIN)
     turtle.tracer(0, 0)
     turtle.title(title)
 
@@ -96,7 +96,7 @@ def draw_vessel():
 sim_state = SimState.setup()
 setup_screen("Thermodynamics")
 draw_vessel()
-molecules = [Molecule.create(V_COLD, left_wall, -R, "blue") for _ in range(N)]
+molecules = [Molecule.create(V_COLD, -right_wall, -R, "blue") for _ in range(N)]
 molecules.extend([Molecule.create(V_HOT, R, right_wall, "red") for _ in range(N)])
 
 writer = turtle.Turtle()
@@ -105,7 +105,7 @@ writer.penup()
 
 
 def temperature(gas):
-    return round(sum([mol.v for mol in gas]) / len(gas), 2)
+    return sum(mol.v**2 for mol in gas) / len(gas)
 
 
 def tick():
@@ -118,9 +118,9 @@ def tick():
 
         writer.clear()
         writer.goto(-100, HEIGHT / 2)
-        writer.write(temperature(m_left))
+        writer.write(round(temperature(m_left)))
         writer.goto(100, HEIGHT / 2)
-        writer.write(temperature(m_right))
+        writer.write(round(temperature(m_right)))
 
         turtle.update()
         turtle.ontimer(tick, SLEEP_MS)
