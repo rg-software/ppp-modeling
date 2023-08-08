@@ -1,6 +1,3 @@
-# TODO: **2 => x*x; get rid of sqrt
-# check with python -m cProfile -s tottime boids.py
-
 import turtle
 import math
 from random import uniform
@@ -8,18 +5,18 @@ from dataclasses import dataclass
 
 WIDTH = 600
 HEIGHT = 400
+MARGIN = 50
+R = 10
+SLEEP_MS = 20
 MIN_V = 5
 MAX_V = 20
-MIN_DISTANCE = 40
+MIN_DISTANCE = 20
 AVOID_F = 0.09
 VISUAL_RANGE = 200
 CENTERING_F = 0.03
-VMATCH_F = 0.02
+VMATCH_F = 0.04
 VRETURN_F = 3.0
 RET_MARGIN = 70
-R = 10
-MARGIN = 50
-SLEEP_MS = 20
 N = 100  # number of boids
 
 
@@ -38,76 +35,97 @@ class SimState:
         return r
 
 
-def clamp(v, max_v):
-    return math.copysign(min(abs(v), max_v), v)
+def mult(vec, factor):
+    return (vec[0] * factor, vec[1] * factor)
+
+
+def length(vec):
+    return math.sqrt(vec[0] * vec[0] + vec[1] * vec[1])
+
+
+def scale(vec, new_len):
+    return mult(vec, new_len / length(vec))
+
+
+def vecsum(v1, v2):
+    return (v1[0] + v2[0], v1[1] + v2[1])
+
+
+def vecdiff(v1, v2):
+    return (v1[0] - v2[0], v1[1] - v2[1])
 
 
 @dataclass
 class Boid:
     m: turtle.Turtle
-    vx: float
-    vy: float
+    v: tuple
 
-    def distance(self, b):
+    def distance_sq(self, b):
         dx = b.m.xcor() - self.m.xcor()
         dy = b.m.ycor() - self.m.ycor()
-        # return math.sqrt(dx * dx + dy * dy)  #
-        return math.sqrt(dx**2 + dy**2)
+        return dx * dx + dy * dy
 
     def neighbors(self, dist):
-        return [b for b in boids if b != self and self.distance(b) < dist]
+        dist_sq = dist * dist
+        return [b for b in boids if b != self and self.distance_sq(b) < dist_sq]
 
     def move(self):
-        self.rule1()
-        self.rule2()
-        self.rule3()
-        self.rule4()
+        self.rule_separation()
+        self.rule_alignment()
+        self.rule_cohesion()
+        self.rule_limits()
 
-        self.m.goto(self.m.xcor() + self.vx, self.m.ycor() + self.vy)
-        self.m.setheading(math.degrees(math.atan2(self.vy, self.vx)))
+        x_new, y_new = self.m.xcor() + self.v[0], self.m.ycor() + self.v[1]
+        self.m.setheading(self.m.towards(x_new, y_new))
+        self.m.goto(x_new, y_new)
 
     # towards center of mass of neighbors
-    def rule1(self):
+    def rule_cohesion(self):
         neighbors = self.neighbors(VISUAL_RANGE)
 
         if neighbors:
             cx = sum(b.m.xcor() for b in neighbors) / len(neighbors)
             cy = sum(b.m.ycor() for b in neighbors) / len(neighbors)
+            center = (cx, cy)
 
-            self.vx += (cx - self.m.xcor()) * CENTERING_F
-            self.vy += (cy - self.m.ycor()) * CENTERING_F
+            c_direction = vecdiff(center, (self.m.xcor(), self.m.ycor()))
+            self.v = vecsum(self.v, mult(c_direction, CENTERING_F))
 
     # keep a small dist away from other objects
-    def rule2(self):
+    def rule_separation(self):
         neighbors = self.neighbors(MIN_DISTANCE)
 
         if neighbors:
-            mx = sum(self.m.xcor() - b.m.xcor() for b in neighbors)
-            my = sum(self.m.ycor() - b.m.ycor() for b in neighbors)
+            vx = sum(self.m.xcor() - b.m.xcor() for b in neighbors)
+            vy = sum(self.m.ycor() - b.m.ycor() for b in neighbors)
+            target_v = (vx, vy)
 
-            self.vx += mx * AVOID_F
-            self.vy += my * AVOID_F
+            self.v = vecsum(self.v, mult(target_v, AVOID_F))
 
     # match velocity with neighbors
-    def rule3(self):
+    def rule_alignment(self):
         neighbors = self.neighbors(VISUAL_RANGE)
 
         if neighbors:
-            px = sum(b.vx for b in neighbors) / len(neighbors)
-            py = sum(b.vy for b in neighbors) / len(neighbors)
+            vx = sum(b.v[0] for b in neighbors) / len(neighbors)
+            vy = sum(b.v[1] for b in neighbors) / len(neighbors)
+            flock_v = (vx, vy)
+            v_diff = vecdiff(flock_v, self.v)
 
-            self.vx += (px - self.vx) * VMATCH_F
-            self.vy += (py - self.vy) * VMATCH_F
+            self.v = vecsum(self.v, mult(v_diff, VMATCH_F))
 
-    def rule4(self):
+    # limit boid speed to MAX_V and steer away from the screen borders
+    def rule_limits(self):
+        ax, ay = 0, 0
+
         if abs(self.m.xcor()) > WIDTH / 2 - RET_MARGIN:
-            self.vx -= math.copysign(VRETURN_F, self.m.xcor())
+            ax = -math.copysign(VRETURN_F, self.m.xcor())
         if abs(self.m.ycor()) > HEIGHT / 2 - RET_MARGIN:
-            self.vy -= math.copysign(VRETURN_F, self.m.ycor())
+            ay = -math.copysign(VRETURN_F, self.m.ycor())
 
-        if (v := math.sqrt(self.vx**2 + self.vy**2)) > MAX_V:
-            self.vx = MAX_V * self.vx / v
-            self.vy = MAX_V * self.vy / v
+        self.v = vecsum(self.v, (ax, ay))
+        if length(self.v) > MAX_V:
+            self.v = scale(self.v, MAX_V)
 
     @classmethod
     def create(cls):
@@ -118,7 +136,7 @@ class Boid:
         m.goto(x, y)
         v = uniform(MIN_V, MAX_V)
         angle = uniform(0, 2 * math.pi)
-        return cls(m, v * math.cos(angle), v * math.sin(angle))
+        return cls(m, (v * math.cos(angle), v * math.sin(angle)))
 
 
 def setup_screen(title):

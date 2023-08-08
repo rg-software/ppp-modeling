@@ -5,11 +5,11 @@ from dataclasses import dataclass
 
 WIDTH = 600
 HEIGHT = 400
+MARGIN = 50
+R = 10
+SLEEP_MS = 20
 V = 15
 FORCE = 9
-R = 10
-MARGIN = 50
-SLEEP_MS = 20
 BULB = (0, 0)
 
 
