@@ -102,7 +102,6 @@ class LSystem:
         drawer = turtle.Turtle()
         drawer.hideturtle()
         drawer.penup()
-        # print(pos)
         drawer.goto(pos)
         drawer.pendown()
         drawer.setheading(angle)
