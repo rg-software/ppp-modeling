@@ -2,21 +2,22 @@ import turtle
 from random import uniform, randint
 from dataclasses import dataclass
 
-H = 20
+H = 20  # grass patch size
 W = 30
 SLEEP_MS = 20
 
-GRASS_GROWTH_SPEED = 0.02
+GRASS_GROWTH = 0.02  # units per step
 RABBITS = 40
 WOLVES = 10
 
-MIN_DELIVERY_FAT = 0.7
+MIN_DELIVERY_FAT = 0.7  # needed to deliver an offspring
 NEWBORN_FAT = 0.5
 
 
+# fine-tunable parameters of rabbits and wolves
 @dataclass
 class RabbitCfg:
-    eat_speed: float = 0.25
+    fat_use: float = 0.25
     max_age: int = 15
     delivery_age: int = 3
     delivery_p = 0.7
@@ -27,12 +28,12 @@ class RabbitCfg:
 
 @dataclass
 class WolfConfig:
-    eat_speed: float = 0.01
+    fat_use: float = 0.01
     max_age: int = 30
     delivery_age: int = 5
     delivery_p = 0.5
     fat_factor = 0.25
-    shape: str = "triangle"
+    shape: str = "classic"
     color: str = "black"
 
 
@@ -53,57 +54,58 @@ class SimState:
 
 @dataclass
 class Shape:
-    m: turtle.Turtle
+    drawer: turtle.Turtle
 
     def update(self, fat, is_alive):
         if not is_alive:
-            self.m.hideturtle()
+            self.drawer.hideturtle()
         else:
-            self.m.shapesize(fat)
+            self.drawer.shapesize(fat)
 
     def move(self, coords):
-        self.m.goto(coords[1], coords[0])
+        self.drawer.goto(coords[1], coords[0])
 
     @classmethod
     def create(cls, shape, color, size, coords):
-        m = turtle.Turtle()
-        m.shape(shape)
-        m.color(color)
-        m.penup()
-        m.shapesize(size)
-        m.goto(coords[1], coords[0])
-        return cls(m)
+        r = turtle.Turtle()
+        r.shape(shape)
+        r.color(color)
+        r.penup()
+        r.shapesize(size)
+        r.goto(coords[1], coords[0])
+        r.right(90)
+        return cls(r)
 
 
 @dataclass
 class Grass:
     shape: Shape
-    fat: float
+    amount: float
 
     def grow(self):
-        self.fat = min(self.fat + GRASS_GROWTH_SPEED, 1)
-        self.shape.update(self.fat, True)
+        self.amount = min(self.amount + GRASS_GROWTH, 1)
+        self.shape.update(self.amount, True)
 
     def try_eat(self, to_eat):
-        r = min(to_eat, self.fat)
-        self.fat -= r
+        r = min(to_eat, self.amount)
+        self.amount -= r
         return r
 
     @classmethod
     def create(cls, coords):
-        fat = uniform(0, 1)
-        return cls(Shape.create("circle", "lawn green", fat, coords), fat)
+        amount = uniform(0, 1)
+        return cls(Shape.create("circle", "lawn green", amount, coords), amount)
 
 
 @dataclass
-class Critter:
+class Animal:
     shape: Shape
     fat: float
     age: int
     cfg: object
 
-    def grow(self, food):
-        self.fat = max(0, self.fat - self.cfg.eat_speed)
+    def update_fat(self, food):
+        self.fat = max(0, self.fat - self.cfg.fat_use)
         self.age += 1
 
         if self.is_alive() and food:
@@ -112,8 +114,9 @@ class Critter:
                 self.fat += r * self.cfg.fat_factor
         self.shape.update(self.fat, self.is_alive())
 
-    def move(self, coords):
+    def moved_to(self, coords):
         self.shape.move(coords)
+        return self
 
     def try_eat(self, to_eat):
         r = 0 if to_eat < self.fat else self.fat
@@ -127,7 +130,7 @@ class Critter:
     def deliver_at(self, coords):
         fat_age_fail = self.fat < MIN_DELIVERY_FAT or self.age < self.cfg.delivery_age
         fail = fat_age_fail or uniform(0, 1) > self.cfg.delivery_p
-        return None if fail else Critter.create_full(self.cfg, 0, NEWBORN_FAT, coords)
+        return None if fail else Animal.create_full(self.cfg, 0, NEWBORN_FAT, coords)
 
     @classmethod
     def create_full(cls, cfg, age, fat, coords):
@@ -146,35 +149,35 @@ class WorldState:
     wolves: dict
     cycle: int
 
-    def things(self, plane):
+    # get all non-None objects
+    def animals(self, plane):
         return list((key, value) for key, value in plane.items() if value)
 
     def keep_alive(self, plane):
-        plane.update({k: None for k, v in self.things(plane) if not v.is_alive()})
+        plane.update({k: None for k, v in self.animals(plane) if not v.is_alive()})
 
     def move_and_deliver(self, plane):
-        for coords, v in self.things(plane):
+        for coords, v in self.animals(plane):
             r, c = coords
             newcoords = randint(r - 1, r + 1) % H, randint(c - 1, c + 1) % W
             if not plane[newcoords]:
+                plane[newcoords] = v.moved_to(newcoords)
                 plane[coords] = v.deliver_at(coords)
-                plane[newcoords] = v
-                v.move(newcoords)
 
     def update(self):
         self.cycle += 1
-        things_r = self.things(self.rabbits)
-        things_w = self.things(self.wolves)
-        print(f"{self.cycle}\t{len(things_r)}\t{len(things_w)}")
+        rabbits = self.animals(self.rabbits)
+        wolves = self.animals(self.wolves)
+        print(f"{self.cycle}\t{len(rabbits)}\t{len(wolves)}")
 
-        for coords, v in self.things(self.grass):
+        for v in self.grass.values():
             v.grow()
 
-        for coords, v in things_r:
-            v.grow(self.grass[coords])
+        for coords, v in rabbits:
+            v.update_fat(self.grass[coords])
 
-        for coords, v in things_w:
-            v.grow(self.rabbits[coords])
+        for coords, v in wolves:
+            v.update_fat(self.rabbits[coords])
 
         self.keep_alive(self.rabbits)
         self.keep_alive(self.wolves)
@@ -197,8 +200,8 @@ class WorldState:
         rabbits = {c: None for c in coords}
         wolves = {c: None for c in coords}
 
-        rabbits.update({c: Critter.create(RabbitCfg(), c) for c in cls.coords(RABBITS)})
-        wolves.update({c: Critter.create(WolfConfig(), c) for c in cls.coords(WOLVES)})
+        rabbits.update({c: Animal.create(RabbitCfg(), c) for c in cls.coords(RABBITS)})
+        wolves.update({c: Animal.create(WolfConfig(), c) for c in cls.coords(WOLVES)})
 
         return cls(grass, rabbits, wolves, 0)
 
