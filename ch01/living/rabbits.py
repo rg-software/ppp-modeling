@@ -63,7 +63,7 @@ class Shape:
             self.drawer.shapesize(fat)
 
     def move(self, coords):
-        self.drawer.goto(coords[1], coords[0])
+        self.drawer.goto(coords[0], coords[1])
 
     @classmethod
     def create(cls, shape, color, size, coords):
@@ -72,7 +72,7 @@ class Shape:
         r.color(color)
         r.penup()
         r.shapesize(size)
-        r.goto(coords[1], coords[0])
+        r.goto(coords[0], coords[1])
         r.right(90)
         return cls(r)
 
@@ -158,8 +158,8 @@ class WorldState:
 
     def move_and_deliver(self, plane):
         for coords, v in self.animals(plane):
-            r, c = coords
-            newcoords = randint(r - 1, r + 1) % H, randint(c - 1, c + 1) % W
+            x, y = coords
+            newcoords = randint(x - 1, x + 1) % W, randint(y - 1, y + 1) % H
             if not plane[newcoords]:
                 plane[newcoords] = v.moved_to(newcoords)
                 plane[coords] = v.deliver_at(coords)
@@ -189,12 +189,12 @@ class WorldState:
     def coords(cls, count):
         r = set()
         while len(r) < count:
-            r.add((randint(0, H - 1), randint(0, W - 1)))
+            r.add((randint(0, W - 1), randint(0, H - 1)))
         return r
 
     @classmethod
     def setup(cls):
-        coords = [(r, c) for c in range(W) for r in range(H)]
+        coords = [(x, y) for x in range(W) for y in range(H)]
 
         grass = {c: Grass.create(c) for c in coords}
         rabbits = {c: None for c in coords}
