@@ -1,28 +1,28 @@
 import turtle
-from random import randint
+from random import randint, choices
 from dataclasses import dataclass
 
 H = 40  # grass patch size
 W = 70
 SLEEP_MS = 20
-CELLSIZE = 10
-SHAPE_SIZE = CELLSIZE / 20
+CELLSIZE = 10  # pixels
+SHAPE_SIZE = CELLSIZE / 20  # turtle size
 
 INITIAL_ENERGY = 120
-MAX_ENERGY = 370
+MAX_ENERGY = 400
 FISSION_ENERGY = 250
 MATURITY_AGE = 200
 FOOD_ENERGY = 20
 MAX_WEIGHT = 32
-EDEN_WIDTH = 15
+EDEN_WIDTH = 20
 EDEN_MARGIN = 10
-PLANKTON_PERIOD = 3
-PLANKTON_COUNT = 200
+PLANKTON_PERIOD = 2
+PLANKTON_COUNT = 100
 BUGS_COUNT = 10
 
 
-gen_count = []
-gen_visited = []
+gen_count = []  # bugs in the given generation
+gen_visited = []  # unique cells visited by bugs of a generation
 
 
 @dataclass
@@ -79,26 +79,18 @@ class Bug:
     age: int = 0
 
     def x(self):
-        return int(self.shape.xcor())
+        return round(self.shape.xcor())
 
     def y(self):
-        return int(self.shape.ycor())
-
-    def weighted_random(self):
-        r = randint(1, sum(self.dirweights))
-        for cnt, weight in enumerate(self.dirweights):
-            r -= weight
-            if r <= 0:
-                return cnt
-        raise RuntimeError()
+        return round(self.shape.ycor())
 
     def remove(self):
         gen_visited[self.generation] += len(self.visited)
         self.shape.hideturtle()
         visits = [f"{gen_visited[i]/gen_count[i]:.2f}" for i in range(len(gen_count))]
 
-        print(f"Profile: {self.dirweights}")
         print("Visits: " + " ".join(visits))
+        print(f"Profile: {self.dirweights}\n")
 
     def eat_and_move(self, food):
         self.visited.add((self.x(), self.y()))
@@ -108,9 +100,9 @@ class Bug:
             self.remove()
         else:
             self.energy = min(MAX_ENERGY, self.energy + food)
-            r = self.weighted_random()
+            r = choices(list(range(8)), self.dirweights)[0]
             self.shape.left(45 * r)
-            self.shape.forward(1.0)  # .5)
+            self.shape.forward(1)
             self.shape.setx(clamp(self.shape.xcor(), 0, W - 1))
             self.shape.sety(clamp(self.shape.ycor(), 0, H - 1))
 
@@ -158,7 +150,7 @@ class Bug:
 
 @dataclass
 class WorldState:
-    plankton: list  # dict
+    plankton: list
     bugs: list
     cycle: int
 
@@ -167,8 +159,8 @@ class WorldState:
             x, y = randint(0, W - 1), randint(0, H - 1)
             ex, ey = randint(EDEN_MARGIN, EDEN_WIDTH), randint(EDEN_MARGIN, EDEN_WIDTH)
 
-            self.plankton[x][y].show(True)
-            self.plankton[ex][ey].show(True)
+            self.plankton[x][y].show(True)  # add to the bowl
+            self.plankton[ex][ey].show(True)  # add to the garden
         return self
 
     def update(self):
@@ -188,7 +180,6 @@ class WorldState:
     @classmethod
     def setup(cls):
         bugs = [Bug.create_random() for _ in range(BUGS_COUNT)]
-
         plankton = [[Plankton.create(x, y) for y in range(H)] for x in range(W)]
 
         return cls(plankton, bugs, 0).add_plankton(PLANKTON_COUNT)

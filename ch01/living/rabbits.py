@@ -18,9 +18,9 @@ NEWBORN_FAT = 0.5
 @dataclass
 class RabbitCfg:
     fat_use: float = 0.25
-    max_age: int = 15
+    max_age: int = 10
     delivery_age: int = 3
-    delivery_p = 0.7
+    delivery_p = 0.8
     fat_factor = 1
     shape: str = "turtle"
     color: str = "rosy brown"
@@ -28,11 +28,11 @@ class RabbitCfg:
 
 @dataclass
 class WolfConfig:
-    fat_use: float = 0.01
-    max_age: int = 30
+    fat_use: float = 0.02
+    max_age: int = 25
     delivery_age: int = 5
     delivery_p = 0.5
-    fat_factor = 0.25
+    fat_factor = 0.3
     shape: str = "classic"
     color: str = "black"
 
