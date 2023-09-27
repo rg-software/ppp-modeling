@@ -1,13 +1,14 @@
 import turtle
-import math
-from random import uniform
 
 WIDTH = 600
 HEIGHT = 400
-V = 2
-LOSS_COEFF = 0.8
+V = 3
+MINV = 0.01
+LOSS_COEFF = 0.7
+ACCELERATION = -0.5  # negative is downwards
 R = 10
 MARGIN = 50
+SLEEP_MS = 20
 
 done = False
 right_wall = WIDTH / 2 - R
@@ -29,30 +30,22 @@ turtle.onkeypress(set_done, "space")
 m = turtle.Turtle()
 m.shape("circle")
 m.penup()
-
-# let's draw a vessel
-m.goto(-WIDTH / 2, -HEIGHT / 2)
+m.goto(WIDTH / 2, -HEIGHT / 2)
 m.pendown()
-m.sety(HEIGHT / 2)
-m.setx(WIDTH / 2)
-m.sety(-HEIGHT / 2)
 m.setx(-WIDTH / 2)
-m.penup()
 
-m.goto(-right_wall, 0)
-# uniform(-right_wall, right_wall), uniform(-top_wall, top_wall))
-
-# angle = uniform(0, 2 * math.pi)
-vx = V  # * math.cos(angle)
-vy = 0  # V * math.sin(angle)
-acceleration = -0.3
+vx = V
+vy = 0
+m.sety(HEIGHT / 3)
 
 
 def tick():
     if not done:
         global vx, vy
+
         m.goto(m.xcor() + vx, m.ycor() + vy)
 
+        # stop if the ball is about to leave the screen
         if m.xcor() > right_wall:
             set_done()
 
@@ -60,10 +53,10 @@ def tick():
             m.goto(m.xcor(), bottom_wall)
             vy *= -LOSS_COEFF
 
-        vy += acceleration
+        vy += ACCELERATION
 
         turtle.update()
-        turtle.ontimer(tick, 20)
+        turtle.ontimer(tick, SLEEP_MS)
 
 
 tick()
