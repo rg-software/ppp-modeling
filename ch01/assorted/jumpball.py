@@ -22,7 +22,7 @@ def set_done():
 
 turtle.setup(WIDTH + MARGIN, HEIGHT + MARGIN)
 turtle.tracer(0, 0)
-turtle.title("Falling ball")
+turtle.title("Jumping ball")
 
 turtle.listen()
 turtle.onkeypress(set_done, "space")
