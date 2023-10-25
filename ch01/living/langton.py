@@ -67,7 +67,7 @@ class WorldState:
     def update(self):
         self.step += 1
         if self.step % 1000 == 0:
-            print(self.step)
+            print(f"Performing step: {self.step}")
 
         x = round(self.ant.xcor())
         y = round(self.ant.ycor())

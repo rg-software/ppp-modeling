@@ -13,3 +13,4 @@ for _ in range(N):
     bins[bin_idx] += 1
 
 print(f"bins: {bins}")
+print(f"prob: {[b / N for b in bins]}")
