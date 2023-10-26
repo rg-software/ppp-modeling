@@ -1,5 +1,6 @@
 from random import uniform
 
+
 N = 100000
 Nc = 0
 
