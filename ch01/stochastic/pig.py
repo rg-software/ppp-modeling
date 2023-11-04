@@ -16,7 +16,7 @@ def turn_score(target):
 best_target = 0
 best_total = 0
 
-for target in range(1, 101):
+for target in range(2, 101):
     total = 0
     for _ in range(N):
         total += turn_score(target)

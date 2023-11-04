@@ -1,21 +1,20 @@
 from random import uniform
 
 N = 100000
-DIST = 1000
-DAYLEN = 24 * 3600
+DIST = 10
+DAYLEN = 5 * 2 * DIST  # 5 loops
 
-succ_count = 0
+wins = 0
 for _ in range(N):
     t = uniform(0, DAYLEN)
     src = uniform(0, DIST)
-    dest = uniform(0, DIST)
+    dst = uniform(0, DIST)
+    busloc = t % (2 * DIST)
 
-    buspos = t % (2 * DIST)
+    bus_sbs = src <= busloc <= 2 * DIST - src
+    bus_sas = busloc <= src or busloc >= 2 * DIST - src
 
-    if buspos <= src < dest or buspos >= src > dest:
-        succ_count += 1
+    if src >= dst and bus_sbs or src < dst and bus_sas:
+        wins += 1
 
-print(succ_count / N)
-
-# A - C - D - B
-# A - D - C - B
+print(wins / N)
