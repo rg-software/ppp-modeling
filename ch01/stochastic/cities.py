@@ -3,15 +3,15 @@ import turtle
 from random import randint
 from dataclasses import dataclass
 
-
-H = 15
-W = 15
+H = 25
+W = 25
 SLEEP_MS = 50
-CELLSIZE = 30  # pixels
-SHAPE_SIZE = CELLSIZE / 20  # turtle size
-POPULATION = 15000
-SHAPE_SIZE_FACTOR = 5000
-DA_FORCE_COEFF = 0.00001
+CELLSIZE = 20  # pixels
+
+SHAPE_SIZE_FACTOR = 0.01
+SHAPE_SIZE = SHAPE_SIZE_FACTOR * CELLSIZE / 20  # turtle size
+POPULATION = 25000
+DAC = 0.00005
 
 
 @dataclass
@@ -46,10 +46,10 @@ class City:
         if self.population == 0:
             self.shape.hideturtle()
         else:
-            self.shape.shapesize(SHAPE_SIZE * self.population / SHAPE_SIZE_FACTOR)
+            self.shape.shapesize(SHAPE_SIZE * math.sqrt(self.population))
 
-    def value(self):
-        return self.population - DA_FORCE_COEFF * self.population**2
+    def score(self):
+        return self.population - DAC * self.population**2
 
     @classmethod
     def create(cls, x, y):
@@ -58,28 +58,6 @@ class City:
         p.shape("circle")
         p.goto(x, y)
         return cls(p)
-
-
-# agents gravitate
-# towards high-density locations because such locations generate positive externalities,
-# which have been shown empirically to be the driving force behind the formation of
-# agglomeration economies in the US
-# S (see, e.g., Rosenthal & Strange, 2001).
-
-# s bounded rationality in the form of limited spatial reach
-
-# state of location updated on the basis of neighbors at most D away
-# each agent has capability to migrate within a threshold r
-# then the decision depends on its reach and state of neighbors
-
-# start with cities in a grid, agents are randomly distributed
-# also each agent has builtin visibility reach (up to half size)
-
-# attractiveness is population - c*population^2 (negative effect is there too)
-# (and negatives must outweight at some point)
-# on each turn agents migrate
-
-# 12000 agents; the least mobile travel 1 unit dist; most mobile travel everywhere
 
 
 @dataclass
@@ -103,6 +81,7 @@ class Person:
 class WorldState:
     cities: list
     population: list
+    prev_ranks: list = None
 
     @classmethod
     def setup(cls):
@@ -111,25 +90,27 @@ class WorldState:
         return cls(cells, population)
 
     def better_neighbor(self, city, dist):
-        bestcity = city
+        best_city = city
         xc, yc = int(city.shape.xcor()), int(city.shape.ycor())
-        for x in range(max(0, xc - dist), min(W - 1, xc + dist)):
-            for y in range(max(0, yc - dist), min(H - 1, yc + dist)):
+        for x in range(max(0, xc - dist), min(W - 1, xc + dist) + 1):
+            for y in range(max(0, yc - dist), min(H - 1, yc + dist) + 1):
                 dst = self.cities[x][y]
-                if dst.value() > bestcity.value():
-                    bestcity = dst
-        return bestcity
+                if dst.score() > best_city.score():
+                    best_city = dst
+        return best_city
 
     def rankings(self):
-        values = [self.cities[x][y].population for x in range(W) for y in range(H)]
-        return sorted([v for v in values if v > 0], reverse=True)
+        scores = [self.cities[x][y].population for x in range(W) for y in range(H)]
+        return sorted([v for v in scores if v > 0], reverse=True)
 
     def update(self):
         for p in self.population:
             dest = self.better_neighbor(p.city, p.max_distance)
             p.move_to(dest)
 
-        print(self.rankings())
+        if self.rankings() == self.prev_ranks:
+            print(f"The cities ({len(self.prev_ranks)}) have stabilized")
+        self.prev_ranks = self.rankings()
 
 
 def setup_screen(title):
@@ -139,7 +120,23 @@ def setup_screen(title):
     turtle.setworldcoordinates(0, 0, W, H)
 
 
-setup_screen("Cities")
+def draw_chart(rankings):
+    turtle.clearscreen()
+    drawer = turtle.Turtle()
+    drawer.hideturtle()
+    drawer.penup()
+
+    width = math.log(len(rankings))
+    height = math.log(rankings[0])
+    turtle.setworldcoordinates(0, 0, math.ceil(width), math.ceil(height))
+
+    print(rankings)
+    for x, y in enumerate(rankings):
+        drawer.goto(math.log(x + 1), math.log(y))
+        drawer.pendown()
+
+
+setup_screen("The rise of cities")
 sim_state = SimState.setup()
 world_state = WorldState.setup()
 
@@ -150,17 +147,7 @@ def tick():
         turtle.update()
         turtle.ontimer(tick, SLEEP_MS)
     else:
-        turtle.clearscreen()
-        drawer = turtle.Turtle()
-        drawer.hideturtle()
-
-        values = world_state.rankings()
-        width = math.log(len(values))
-        height = math.log(values[0])
-        turtle.setworldcoordinates(0, 0, math.ceil(width), math.ceil(height))
-
-        for x, y in enumerate(values):
-            drawer.goto(math.log(x + 1), math.log(y))
+        draw_chart(world_state.rankings())
 
 
 tick()
