@@ -1,0 +1,67 @@
+\documentclass[nemilov1]{Nemilov}
+%\input{pdf-settings}
+
+\frenchspacing
+\tolerance=5000
+\makeindex
+
+\begin{document}
+
+\frontmatter
+
+\halftitle{$title$}{$description$} %Placeholder for Half title
+
+%\seriespg{Series page goes here (if applicable); otherwise blank}
+
+\title{$title$}
+%\subtitle{Subtitle for the book (if Any)}
+
+\edition{First Edition}
+
+\author{$author$}
+
+\maketitle
+
+%\setcounter{page}{5}
+
+%\include{frontmatter/Dedication}
+
+\tableofcontents
+
+%\include{frontmatter/Foreword}
+%\include{frontmatter/preface}
+%\include{frontmatter/author}
+%\include{frontmatter/contributor}
+
+\mainmatter
+
+%\part{Section Title Goes Here}
+
+$for(chapters)$
+\include{$chapters$/$chapters$}
+$endfor$
+
+
+%%\include{Chapters/chapter1/chapter1}\setcounter{page}{16}
+%\part{Section Title More Than Two Lines Goes Here Section Title More Than Two Lines Goes Here}
+%\include{Chapters/chapter2/chapter2}
+%\include{Chapters/chapter3/chapter3}
+
+
+\appendix
+%\include{Chapters/chapter9/chapter9}
+
+
+\cleardoublepage
+
+\chapter*{References}
+\addcontentsline{toc}{fm}{References}
+\markboth{References}{References}
+\bibliographystyle{plain}
+\bibliography{biblio}
+
+%\cleardoublepage
+%\printindex
+%\cleardoublepage
+
+\end{document}
