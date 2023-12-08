@@ -1,5 +1,15 @@
 \documentclass[nemilov1]{Nemilov}
-%\input{pdf-settings}
+\usepackage{minted}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{makeidx}
+
+\def\tightlist{}
+\def\square{}
+\def\autocite{\cite}
+\graphicspath{{./Figures/}}
 
 \frenchspacing
 \tolerance=5000
@@ -22,16 +32,18 @@
 
 \maketitle
 
-%\setcounter{page}{5}
+\setcounter{page}{5}
 
-%\include{frontmatter/Dedication}
+% dedication (if used)
 
 \tableofcontents
 
-%\include{frontmatter/Foreword}
-%\include{frontmatter/preface}
-%\include{frontmatter/author}
-%\include{frontmatter/contributor}
+$for(frontmatters)$
+\include{$frontmatters$/$frontmatters$}
+$endfor$
+
+% acknowledgement (if used)
+% author bio (if used)
 
 \mainmatter
 
@@ -41,16 +53,14 @@ $for(chapters)$
 \include{$chapters$/$chapters$}
 $endfor$
 
-
 %%\include{Chapters/chapter1/chapter1}\setcounter{page}{16}
 %\part{Section Title More Than Two Lines Goes Here Section Title More Than Two Lines Goes Here}
 %\include{Chapters/chapter2/chapter2}
 %\include{Chapters/chapter3/chapter3}
 
-
 \appendix
-%\include{Chapters/chapter9/chapter9}
 
+%\include{Chapters/chapter9/chapter9}
 
 \cleardoublepage
 
@@ -60,8 +70,12 @@ $endfor$
 \bibliographystyle{plain}
 \bibliography{biblio}
 
-%\cleardoublepage
-%\printindex
-%\cleardoublepage
+\cleardoublepage
+\printindex
+\cleardoublepage
+
+
+\clearpage
+\include{alttext} % ALT TEXT section is here
 
 \end{document}
