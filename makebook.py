@@ -4,8 +4,12 @@
 # convert with
 # inkscape --export-filename=<outfile>.pdf <infile>.svg
 
+# for Pandoc 3, upgrade pandoc-fignos as explained:
+# https://github.com/tomduck/pandoc-xnos/pull/29
+
 import re
 import yaml
+import sys
 from plumbum import local
 from plumbum.path.utils import copy
 
@@ -50,14 +54,18 @@ def copy_images(mdfile):
     with open(mdfile, encoding="utf-8") as f:
         data = f.read()
     # read all image names
-    matches = re.findall(r"!\[.+\]\((.+\.excalidraw)\)", data)
+    svg_matches = re.findall(r"!\[.*\]\((.+\.excalidraw)\)", data)
+    png_matches = re.findall(r"!\[.*\]\((.+\.png)\)", data)
 
-    print(matches)
+    print(svg_matches + png_matches)
     with local.cwd(ATTACH_PATH):
-        for m in matches:
+        for m in svg_matches:
             copy(f"{m}.svg", FIGURES_OUTPATH)
             with local.cwd(FIGURES_OUTPATH):
                 convert_image(m)
+
+        for m in png_matches:
+            copy(m, FIGURES_OUTPATH)
 
 
 def convert_chapter(ch):
@@ -67,7 +75,8 @@ def convert_chapter(ch):
     # chapter titles in metadata have dashes instead of spaces
     title = ch.replace("-", " ")
 
-    copy_images(f"{title}.md")
+    if not (len(sys.argv) > 1 and sys.argv[1] == "-skipfig"):
+        copy_images(f"{title}.md")
 
     pandoc(
         f"{title}.md",
@@ -78,14 +87,15 @@ def convert_chapter(ch):
         "-F",
         "pandoc-minted",
         "-F",
-        "pandoc-fignos",
+        "pandoc-crossref",
+        # "pandoc-fignos",
         "--biblatex",
         "-r",
         "markdown-auto_identifiers",
         "-M",
         f"title:{title}",
-        "-M",
-        "fignos-plus-name:Figure",
+        # "-M",
+        # "fignos-plus-name:Figure",
         "--template",
         TPL_PATH / "chapter-template.tex",
         "-o",
@@ -109,7 +119,7 @@ copy(ZOTERO_BIB, BOOK_OUTPATH / "biblio.bib")
 metadata = read_metadata()
 
 with local.cwd(MDFILES_PATH):
-    for ch in metadata["frontmatters"] + metadata["chapters"]:
+    for ch in metadata["frontmatters"] + metadata["mainchapters"]:
         convert_chapter(ch)
 
     # main production

@@ -5,6 +5,21 @@
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{makeidx}
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{calc}
+
+\makeatletter
+\setkeys{Gin}{width=\ifdim\Gin@nat@width>\linewidth
+    0.8\linewidth
+\else
+    \Gin@nat@width
+\fi}
+\makeatother
+
+\setminted{fontsize=\footnotesize}
+\setmintedinline{fontsize=\footnotesize}
 
 \def\tightlist{}
 \def\square{}
@@ -49,8 +64,8 @@ $endfor$
 
 %\part{Section Title Goes Here}
 
-$for(chapters)$
-\include{$chapters$/$chapters$}
+$for(mainchapters)$
+\include{$mainchapters$/$mainchapters$}
 $endfor$
 
 %%\include{Chapters/chapter1/chapter1}\setcounter{page}{16}
