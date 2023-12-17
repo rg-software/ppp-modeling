@@ -1,11 +1,11 @@
 from random import choices
 from dataclasses import dataclass
 
-INIT_WEIGHT = 10
+INIT_WEIGHT = 50
 POS_REWARD = 5
 NEG_REWARD = -5
 LEARN_RATE = 0.8
-PLAYER_SYMBOL = "O"
+PLAYER_SYMBOL = "X"
 OPP_SYMBOL = "O" if PLAYER_SYMBOL == "X" else "X"
 
 
@@ -27,7 +27,7 @@ class State:
 
     def random_action(self):
         w = [a.weight for a in self.actions]
-        return self.actions[0] if sum(w) == 0 else choices(self.actions, w)[0]
+        return choices(self.actions, w)[0]
 
     def key(self):
         return tuple(self.value)
@@ -60,7 +60,7 @@ class State:
 def reward(history, score):
     r = score
     for action in reversed(history):
-        action.weight = max(0, action.weight + r)
+        action.weight = max(0.001, action.weight + r)
         r *= LEARN_RATE
 
 
@@ -98,7 +98,7 @@ def play_results():
 
 
 for _ in range(10):
-    stats = [play_results() for _ in range(1000)]
+    stats = [play_results() for _ in range(10000)]
     for k in range(3):
         print(sum(s[k] for s in stats), end=" ")
     print()

@@ -2,11 +2,11 @@ from random import randint, choices
 from collections import defaultdict
 from pydoc_data.topics import topics
 
-TOKENS = 50
+TOKENS = 100
 
 input_text = " ".join(topics.values())
 words_raw = input_text.split()
-words = [w.lower() for w in words_raw if w.isalnum()]
+words = [w for w in words_raw if w.replace(",", "").replace(".", "").isalpha()]
 freq = {}
 
 for i in range(len(words) - 2):
