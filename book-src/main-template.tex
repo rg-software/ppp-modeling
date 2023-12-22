@@ -1,5 +1,5 @@
 \documentclass[nemilov1]{Nemilov}
-\usepackage{minted}
+\usepackage[newfloat]{minted}
 \usepackage{longtable}
 \usepackage{booktabs}
 \usepackage{graphicx}
@@ -20,6 +20,8 @@
 
 \setminted{fontsize=\footnotesize}
 \setmintedinline{fontsize=\footnotesize}
+\newenvironment{codelisting}{\captionsetup{type=listing}}{}
+\SetupFloatingEnvironment{listing}{name=Listing}
 
 \def\tightlist{}
 \def\square{}

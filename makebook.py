@@ -23,6 +23,7 @@ FIGURES_OUTPATH = BOOK_OUTPATH / "Figures"
 
 pandoc = local["pandoc"]
 inkscape = local["inkscape"]
+latexmk = local["latexmk"]
 
 
 def convert_image(filename):
@@ -36,18 +37,6 @@ def convert_image(filename):
         ef.write(data)
 
     inkscape(f"--export-filename={filename}.pdf", fixed_svg)
-
-    # to_write = False
-    # with open(filename, "w") as ef:
-    #     for line in lines:
-    #         if line.startswith("```"):
-    #             to_write = False
-    #         if to_write:
-    #             ef.write(line)
-    #         if line.startswith("```json"):
-    #             to_write = True
-    # ee = local["excalidraw_export.cmd"]
-    # ee("--pdf", filename)
 
 
 def copy_images(mdfile):
@@ -68,6 +57,25 @@ def copy_images(mdfile):
             copy(m, FIGURES_OUTPATH)
 
 
+def add_alt_text(title):
+    with open(f"{title}.md", encoding="utf-8") as f:
+        data = f.read()
+
+    matches = re.findall(r"<!-- {{ALT}}{(.+)} (.+) -->", data)
+    with open(BOOK_OUTPATH / "alttext.md", "a", encoding="utf-8") as ef:
+        for m in matches:
+            ef.write(f"**{m[0]}** {m[1]}\r\n\r\n")
+
+
+def make_xe_version(ch, title):
+    with open(f"{title}.md", encoding="utf-8") as f:
+        data = f.read()
+
+    data = re.sub(r"<!--{xe:(.+?)}-->", r"\\index{\1}", data)
+    with open(BOOK_OUTPATH / ch / f"{title}-xe.md", "w", encoding="utf-8") as ef:
+        ef.write(data)
+
+
 def convert_chapter(ch):
     print(f"Converting '{ch}'")
     local.path(BOOK_OUTPATH / ch).mkdir()
@@ -75,27 +83,32 @@ def convert_chapter(ch):
     # chapter titles in metadata have dashes instead of spaces
     title = ch.replace("-", " ")
 
-    if not (len(sys.argv) > 1 and sys.argv[1] == "-skipfig"):
+    if "-skipfig" not in sys.argv:
         copy_images(f"{title}.md")
 
+    make_xe_version(ch, title)
+    add_alt_text(title)
+
     pandoc(
-        f"{title}.md",
+        BOOK_OUTPATH / ch / f"{title}-xe.md",
         "Metadata.md",
         "--wrap=preserve",
-        # "--listings",
         "--shift-heading-level-by=-1",
         "-F",
-        "pandoc-minted",
-        "-F",
         "pandoc-crossref",
-        # "pandoc-fignos",
+        "-F",
+        "pandoc-minted",
         "--biblatex",
         "-r",
         "markdown-auto_identifiers",
         "-M",
         f"title:{title}",
-        # "-M",
-        # "fignos-plus-name:Figure",
+        "-M",
+        "codeBlockCaptions=true",
+        "-M",
+        "figPrefix=Figure",
+        "-M",
+        "lstPrefix=Listing",
         "--template",
         TPL_PATH / "chapter-template.tex",
         "-o",
@@ -113,6 +126,7 @@ def read_metadata():
 ### MAIN ###
 
 local.path(FIGURES_OUTPATH).mkdir()
+local.path(BOOK_OUTPATH / "alttext.md").delete()
 copy(TPL_PATH / "Nemilov.cls", BOOK_OUTPATH)
 copy(ZOTERO_BIB, BOOK_OUTPATH / "biblio.bib")
 
@@ -122,11 +136,15 @@ with local.cwd(MDFILES_PATH):
     for ch in metadata["frontmatters"] + metadata["mainchapters"]:
         convert_chapter(ch)
 
-    # main production
     pandoc(
         "Metadata.md",
+        BOOK_OUTPATH / "alttext.md",
         "--template",
         TPL_PATH / "main-template.tex",
         "-o",
         BOOK_OUTPATH / "main.tex",
     )
+
+if "-makepdf" in sys.argv:
+    with local.cwd(BOOK_OUTPATH):
+        latexmk("-pdf", "-shell-escape", "main.tex")
