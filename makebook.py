@@ -61,7 +61,8 @@ def add_alt_text(title):
     with open(f"{title}.md", encoding="utf-8") as f:
         data = f.read()
 
-    matches = re.findall(r"<!-- {{ALT}}{(.+)} (.+) -->", data)
+    matches = re.findall(r"<!-- {ALT}{(.+?)} (.+?) -->", data)
+
     with open(BOOK_OUTPATH / "alttext.md", "a", encoding="utf-8") as ef:
         for m in matches:
             ef.write(f"**{m[0]}** {m[1]}\r\n\r\n")
@@ -98,7 +99,7 @@ def convert_chapter(ch):
         "pandoc-crossref",
         "-F",
         "pandoc-minted",
-        "--biblatex",
+        "--natbib",
         "-r",
         "markdown-auto_identifiers",
         "-M",
@@ -109,6 +110,8 @@ def convert_chapter(ch):
         "figPrefix=Figure",
         "-M",
         "lstPrefix=Listing",
+        "-M",
+        "tblPrefix=Table",
         "--template",
         TPL_PATH / "chapter-template.tex",
         "-o",
@@ -136,9 +139,10 @@ with local.cwd(MDFILES_PATH):
     for ch in metadata["frontmatters"] + metadata["mainchapters"]:
         convert_chapter(ch)
 
+    pandoc(BOOK_OUTPATH / "alttext.md", "-o", BOOK_OUTPATH / "alttext.tex")
+
     pandoc(
         "Metadata.md",
-        BOOK_OUTPATH / "alttext.md",
         "--template",
         TPL_PATH / "main-template.tex",
         "-o",
@@ -146,5 +150,13 @@ with local.cwd(MDFILES_PATH):
     )
 
 if "-makepdf" in sys.argv:
+    print("building pdf")
     with local.cwd(BOOK_OUTPATH):
-        latexmk("-pdf", "-shell-escape", "main.tex")
+        latexmk("-c")
+        latexmk(
+            "-pdf",
+            "-shell-escape",
+            "-interaction=nonstopmode",
+            "-file-line-error",
+            "main.tex",
+        )

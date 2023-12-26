@@ -121,6 +121,7 @@ def setup_screen(title):
 
 
 def draw_chart(rankings):
+    # TODO(mm): get rid of clearscreen()?
     turtle.clearscreen()
     drawer = turtle.Turtle()
     drawer.hideturtle()

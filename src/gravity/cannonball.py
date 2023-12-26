@@ -1,9 +1,9 @@
 import turtle
-import math
 
 WIDTH = 600
 HEIGHT = 400
-V = 3.2
+
+V = 2.7
 R = 5
 R_EARTH = 100
 PEDESTAL_H = 14
@@ -44,34 +44,21 @@ vx = V
 vy = 0
 
 
-def mult(vec, factor):
-    return (vec[0] * factor, vec[1] * factor)
-
-
-def length(vec):
-    return math.sqrt(vec[0] ** 2 + vec[1] ** 2)
-
-
-def scale(vec, new_len):
-    return mult(vec, new_len / length(vec))
-
-
-def vecsum(v1, v2):
-    return (v1[0] + v2[0], v1[1] + v2[1])
-
-
 def tick():
     if not done:
         global vx, vy
         m.goto(m.xcor() + vx, m.ycor() + vy)
 
-        r = length((m.xcor(), m.ycor()))
+        r = m.distance((0, 0))
 
         if r < R_EARTH + R:
             set_done()
 
-        a = scale((m.xcor(), m.ycor()), ACCELERATION / (r**2))
-        vx, vy = vecsum((vx, vy), a)
+        ax = m.xcor() * ACCELERATION / (r**3)
+        ay = m.ycor() * ACCELERATION / (r**3)
+
+        vx += ax
+        vy += ay
 
         turtle.update()
         turtle.ontimer(tick, SLEEP_MS)

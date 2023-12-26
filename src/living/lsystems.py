@@ -98,14 +98,7 @@ class LSystem:
     def transform(self):
         self.script = "".join([self.apply_rule(c) for c in self.script])
 
-    def draw(self, pos, angle):
-        drawer = turtle.Turtle()
-        drawer.hideturtle()
-        drawer.penup()
-        drawer.goto(pos)
-        drawer.pendown()
-        drawer.setheading(angle)
-
+    def draw(self, drawer):
         while self.script:
             c = self.script[0]
             self.script = self.script[1:]
@@ -118,12 +111,20 @@ class LSystem:
             if c == "-":
                 drawer.right(ANGLE)
             if c == "[":
-                self.draw(drawer.pos(), drawer.heading())
+                self.draw(drawer.clone())
             if c == "]":
                 return
 
 
 setup_screen("L-systems")
-s = LSystem.create()
-s.draw((0, -HEIGHT / 2), 90)
+
+drawer = turtle.Turtle()
+drawer.hideturtle()
+drawer.penup()
+drawer.goto(0, -HEIGHT / 2)
+drawer.left(90)
+drawer.pendown()
+
+LSystem.create().draw(drawer)
+
 turtle.done()

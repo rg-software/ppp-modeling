@@ -91,8 +91,7 @@ def draw_vessel():
 
 
 def balls_collide(b1, b2):
-    d = math.sqrt((b1.m.xcor() - b2.m.xcor()) ** 2 + (b1.m.ycor() - b2.m.ycor()) ** 2)
-    return d <= b1.r + b2.r
+    return b1.m.distance(b2.m) <= b1.r + b2.r
 
 
 def process_collision(b1, b2):
