@@ -28,6 +28,7 @@
 \def\square{}
 \def\autocite{\cite}
 \graphicspath{{./Figures/}}
+\NewDocumentCommand{\nb}{m}{}
 
 \frenchspacing
 \tolerance=5000
@@ -56,9 +57,9 @@
 
 \tableofcontents
 
-$for(frontmatters)$
-\include{$frontmatters$/$frontmatters$}
-$endfor$
+%$for(frontmatters)$
+%\include{$frontmatters$/$frontmatters$}
+%$endfor$
 
 % acknowledgement (if used)
 % author bio (if used)
@@ -94,6 +95,7 @@ $endfor$
 
 
 \clearpage
-\include{alttext} % ALT TEXT section is here
+
+\include{alttext}
 
 \end{document}

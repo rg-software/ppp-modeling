@@ -61,11 +61,11 @@ def add_alt_text(title):
     with open(f"{title}.md", encoding="utf-8") as f:
         data = f.read()
 
-    matches = re.findall(r"<!-- {ALT}{(.+?)} (.+?) -->", data)
+    matches = re.findall(r"<!-- {ALT}{@(.+?)} (.+?) -->", data)
 
-    with open(BOOK_OUTPATH / "alttext.md", "a", encoding="utf-8") as ef:
+    with open(BOOK_OUTPATH / "alttext.tex", "a", encoding="utf-8") as ef:
         for m in matches:
-            ef.write(f"**{m[0]}** {m[1]}\r\n\r\n")
+            ef.write("\\textbf{\\ref{" + m[0] + "}} " + m[1] + "\r\n")
 
 
 def make_xe_version(ch, title):
@@ -129,7 +129,8 @@ def read_metadata():
 ### MAIN ###
 
 local.path(FIGURES_OUTPATH).mkdir()
-local.path(BOOK_OUTPATH / "alttext.md").delete()
+with open(BOOK_OUTPATH / "alttext.tex", "w", encoding="utf-8") as at:
+    at.write("\\textbf{ALT TEXT}\r\n")
 copy(TPL_PATH / "Nemilov.cls", BOOK_OUTPATH)
 copy(ZOTERO_BIB, BOOK_OUTPATH / "biblio.bib")
 
@@ -139,10 +140,9 @@ with local.cwd(MDFILES_PATH):
     for ch in metadata["frontmatters"] + metadata["mainchapters"]:
         convert_chapter(ch)
 
-    pandoc(BOOK_OUTPATH / "alttext.md", "-o", BOOK_OUTPATH / "alttext.tex")
-
     pandoc(
         "Metadata.md",
+        "--natbib",
         "--template",
         TPL_PATH / "main-template.tex",
         "-o",
