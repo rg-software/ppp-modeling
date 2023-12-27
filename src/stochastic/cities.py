@@ -12,6 +12,7 @@ SHAPE_SIZE_FACTOR = 0.01
 SHAPE_SIZE = SHAPE_SIZE_FACTOR * CELLSIZE / 20  # turtle size
 POPULATION = 25000
 DAC = 0.00005
+MS = 3
 
 
 @dataclass
@@ -82,6 +83,7 @@ class WorldState:
     cities: list
     population: list
     prev_ranks: list = None
+    is_stable: bool = False
 
     @classmethod
     def setup(cls):
@@ -97,7 +99,9 @@ class WorldState:
                 dst = self.cities[x][y]
                 if dst.score() > best_city.score():
                     best_city = dst
-        return best_city
+
+        will_move = best_city.score() - city.score() >= MS
+        return best_city if will_move else city
 
     def rankings(self):
         scores = [self.cities[x][y].population for x in range(W) for y in range(H)]
@@ -109,6 +113,7 @@ class WorldState:
             p.move_to(dest)
 
         if self.rankings() == self.prev_ranks:
+            self.is_stable = True
             print(f"The cities ({len(self.prev_ranks)}) have stabilized")
         self.prev_ranks = self.rankings()
 
@@ -121,7 +126,6 @@ def setup_screen(title):
 
 
 def draw_chart(rankings):
-    # TODO(mm): get rid of clearscreen()?
     turtle.clearscreen()
     drawer = turtle.Turtle()
     drawer.hideturtle()
@@ -144,8 +148,9 @@ world_state = WorldState.setup()
 
 def tick():
     if not sim_state.done:
-        world_state.update()
-        turtle.update()
+        if not world_state.is_stable:
+            world_state.update()
+            turtle.update()
         turtle.ontimer(tick, SLEEP_MS)
     else:
         draw_chart(world_state.rankings())

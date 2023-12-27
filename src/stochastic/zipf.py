@@ -18,7 +18,7 @@ input_text = " ".join(topics.values())
 words = input_text.split()
 freq = defaultdict(int)
 
-for word in [w.lower() for w in words if w.isalnum()]:
+for word in [w.lower() for w in words if w.isalpha()]:
     freq[word] += 1
 
 values = sorted(freq.values(), reverse=True)
