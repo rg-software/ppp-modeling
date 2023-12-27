@@ -30,7 +30,7 @@ def convert_image(filename):
     with open(f"{filename}.svg", encoding="utf-8") as f:
         data = f.read()
 
-    data = data.replace("Virgil, Segoe UI Emoji", "Virgil GS")
+    data = data.replace("Virgil, Segoe UI Emoji", "Virgil 3 YOFF")
 
     fixed_svg = f"{filename}-f.svg"
     with open(fixed_svg, "w", encoding="utf-8") as ef:
