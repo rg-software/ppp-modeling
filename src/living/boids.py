@@ -60,14 +60,8 @@ class Boid:
     m: turtle.Turtle
     v: tuple
 
-    def distance_sq(self, b):
-        dx = b.m.xcor() - self.m.xcor()
-        dy = b.m.ycor() - self.m.ycor()
-        return dx * dx + dy * dy
-
     def neighbors(self, dist):
-        dist_sq = dist * dist
-        return [b for b in boids if b != self and self.distance_sq(b) < dist_sq]
+        return [b for b in boids if b != self and self.m.distance(b.m) < dist]
 
     def move(self):
         self.rule_separation()
