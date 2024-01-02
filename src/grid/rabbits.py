@@ -6,21 +6,22 @@ H = 20  # grass patch size
 W = 30
 SLEEP_MS = 20
 
-GRASS_GROWTH = 0.02  # units per step
-RABBITS = 40
+GRASS_GROWTH = 0.03  # units per step
+RABBITS = 100
 WOLVES = 10
 
 MIN_DELIVERY_FAT = 0.7  # needed to deliver an offspring
 NEWBORN_FAT = 0.5
+D = 3
 
 
 # fine-tunable parameters of rabbits and wolves
 @dataclass
 class RabbitCfg:
-    fat_use: float = 0.25
+    fat_use: float = 0.20
     max_age: int = 10
     delivery_age: int = 3
-    delivery_p = 0.8
+    delivery_p = 0.6
     fat_factor = 1
     shape: str = "turtle"
     color: str = "rosy brown"
@@ -28,11 +29,11 @@ class RabbitCfg:
 
 @dataclass
 class WolfConfig:
-    fat_use: float = 0.02
-    max_age: int = 25
-    delivery_age: int = 5
-    delivery_p = 0.5
-    fat_factor = 0.3
+    fat_use: float = 0.04
+    max_age: int = 17
+    delivery_age: int = 4
+    delivery_p = 0.4
+    fat_factor = 0.6
     shape: str = "classic"
     color: str = "black"
 
@@ -159,7 +160,7 @@ class WorldState:
     def move_and_deliver(self, plane):
         for coords, v in self.animals(plane):
             x, y = coords
-            newcoords = randint(x - 1, x + 1) % W, randint(y - 1, y + 1) % H
+            newcoords = randint(x - D, x + D) % W, randint(y - D, y + D) % H
             if not plane[newcoords]:
                 plane[newcoords] = v.moved_to(newcoords)
                 plane[coords] = v.deliver_at(coords)
