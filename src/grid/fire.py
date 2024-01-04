@@ -68,8 +68,9 @@ class WorldState:
             for yn in range(max(0, y - 1), min(y + 2, H)):
                 a = math.atan2(yn - y, xn - x) - WIND_DIRECTION
                 p = P + P * WIND_STRENGTH * math.cos(a)
-                if self.cells[xn][yn].status == Status.TREE and uniform(0, 1) <= p:
-                    r.append(self.cells[xn][yn])
+                neighbor = self.cells[xn][yn]
+                if neighbor.status == Status.TREE and uniform(0, 1) <= p:
+                    r.append(neighbor)
 
         return r
 

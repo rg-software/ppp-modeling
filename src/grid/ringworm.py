@@ -75,8 +75,9 @@ class WorldState:
         r = []
         for xn in range(max(0, x - 1), min(x + 2, W)):
             for yn in range(max(0, y - 1), min(y + 2, H)):
-                if self.cells[xn][yn].status == Status.HEALTHY and randint(0, 1) == 0:
-                    r.append(self.cells[xn][yn])
+                neighbor = self.cells[xn][yn]
+                if neighbor.status == Status.HEALTHY and randint(0, 1) == 0:
+                    r.append(neighbor)
 
         return r
 

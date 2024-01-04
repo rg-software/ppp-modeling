@@ -5,6 +5,7 @@ from dataclasses import dataclass
 H = 40  # grass patch size
 W = 70
 SLEEP_MS = 20
+VIS_SLEEP_MS = 500
 CELLSIZE = 10  # pixels
 SHAPE_SIZE = CELLSIZE / 20  # turtle size
 
@@ -14,11 +15,9 @@ FISSION_ENERGY = 250
 MATURITY_AGE = 200
 FOOD_ENERGY = 20
 MAX_WEIGHT = 32
-EDEN_WIDTH = 20
-EDEN_MARGIN = 10
-PLANKTON_PERIOD = 2
-PLANKTON_COUNT = 100
-BUGS_COUNT = 10
+PLANKTON_GROWTH = 4
+PLANKTON_COUNT = 300
+BUGS_COUNT = 50
 
 
 gen_count = []  # bugs in the given generation
@@ -79,23 +78,20 @@ class Bug:
     age: int = 0
 
     def x(self):
-        return round(self.shape.xcor())
+        return clamp(round(self.shape.xcor()), 0, W - 1)
 
     def y(self):
-        return round(self.shape.ycor())
+        return clamp(round(self.shape.ycor()), 0, H - 1)
 
     def remove(self):
         gen_visited[self.generation] += len(self.visited)
         self.shape.hideturtle()
-        visits = [f"{gen_visited[i]/gen_count[i]:.2f}" for i in range(len(gen_count))]
-
-        print("Visits: " + " ".join(visits))
-        print(f"Profile: {self.dirweights}\n")
 
     def eat_and_move(self, food):
         self.visited.add((self.x(), self.y()))
         self.age += 1
         self.energy -= 1
+
         if self.energy == 0:
             self.remove()
         else:
@@ -103,8 +99,7 @@ class Bug:
             r = choices(list(range(8)), self.dirweights)[0]
             self.shape.left(45 * r)
             self.shape.forward(1)
-            self.shape.setx(clamp(self.shape.xcor(), 0, W - 1))
-            self.shape.sety(clamp(self.shape.ycor(), 0, H - 1))
+            self.shape.goto(self.x(), self.y())
 
     def new_dirweights(self, dirs, d):
         idx = randint(0, 7)
@@ -152,22 +147,18 @@ class Bug:
 class WorldState:
     plankton: list
     bugs: list
-    cycle: int
+    cycle: int = 0
+    mingen: int = 0
 
     def add_plankton(self, count=1):
         for _ in range(count):
             x, y = randint(0, W - 1), randint(0, H - 1)
-            ex, ey = randint(EDEN_MARGIN, EDEN_WIDTH), randint(EDEN_MARGIN, EDEN_WIDTH)
-
-            self.plankton[x][y].show(True)  # add to the bowl
-            self.plankton[ex][ey].show(True)  # add to the garden
+            self.plankton[x][y].show(True)
         return self
 
     def update(self):
         self.cycle += 1
-
-        if self.cycle % PLANKTON_PERIOD == 0:
-            self.add_plankton()
+        self.add_plankton(PLANKTON_GROWTH)
 
         for b in self.bugs:
             food = self.plankton[b.x()][b.y()]
@@ -177,12 +168,19 @@ class WorldState:
         self.bugs = [b for b in self.bugs if b.energy > 0]
         self.bugs = sum((b.fission() for b in self.bugs), [])
 
+    def report_visits(self):
+        new_mingen = min(b.generation for b in self.bugs)
+        if new_mingen != self.mingen:
+            self.mingen = new_mingen
+            visits = (gen_visited[i] / gen_count[i] for i in range(new_mingen))
+            print([f"{v:.2f}" for v in visits])
+
     @classmethod
     def setup(cls):
         bugs = [Bug.create_random() for _ in range(BUGS_COUNT)]
         plankton = [[Plankton.create(x, y) for y in range(H)] for x in range(W)]
 
-        return cls(plankton, bugs, 0).add_plankton(PLANKTON_COUNT)
+        return cls(plankton, bugs).add_plankton(PLANKTON_COUNT)
 
 
 def setup_screen(title):
@@ -200,9 +198,16 @@ world_state = WorldState.setup()
 def tick():
     if not sim_state.done:
         world_state.update()
-        turtle.update()
         turtle.ontimer(tick, SLEEP_MS)
 
 
+def tick_draw():
+    if not sim_state.done:
+        turtle.update()
+        world_state.report_visits()
+        turtle.ontimer(tick_draw, VIS_SLEEP_MS)
+
+
 tick()
+tick_draw()
 turtle.done()

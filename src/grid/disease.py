@@ -93,7 +93,8 @@ class WorldState:
         for xn in range(x - 1, x + 2):
             for yn in range(y - 1, y + 2):
                 cell = self.cells[xn % W][yn % H]
-                if cell and cell.status == Status.HEALTHY and uniform(0, 1) <= PINFECT:
+                is_healthy = cell and cell.status == Status.HEALTHY
+                if is_healthy and uniform(0, 1) <= PINFECT:
                     r.append(cell)
 
         return r
