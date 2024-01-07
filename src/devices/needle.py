@@ -33,11 +33,11 @@ def rules_for_char(pattern, c):
     rules = {}
     for sl in range(len(pattern) + 1):
         S = pattern[:sl]
-        R = ""
+        maxlen = 0
         for rl in range(1, len(pattern) + 1):
-            Rc = pattern[:rl]
-            if pattern.startswith(Rc) and (S + c).endswith(Rc) and rl > len(R):
-                R = Rc
+            R = pattern[:rl]
+            if pattern.startswith(R) and (S + c).endswith(R) and rl > maxlen:
+                maxlen = len(R)
                 rules[(sl, c)] = rl
     return rules
 

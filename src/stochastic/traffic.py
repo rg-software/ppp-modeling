@@ -13,12 +13,12 @@ EPSILON = 0.0001
 N = 25
 MIN_SPEED = 4
 MAX_SPEED = 7
-SAFE_DISTANCE_STEPS = 15
+SAFE_DIST_STEPS = 15
 CRASH_DISTANCE = 2
 DECEL = 0.4
 ACCEL = 0.1
-REACTION_TIME = 15
-DISRUPTION_TIME = 70
+REACT_TIME = 15
+DISRUPT_TIME = 70
 
 
 @dataclass
@@ -63,7 +63,7 @@ class Car:
     def decelerate(self):
         self.speed = max(0, self.speed - DECEL)
         if self.speed == 0:
-            self.pause_steps = DISRUPTION_TIME if self.in_disrupt else REACTION_TIME
+            self.pause_steps = DISRUPT_TIME if self.in_disrupt else REACT_TIME
             self.in_disrupt = False
 
     def front_distanace(self):
@@ -77,7 +77,7 @@ class Car:
         if self.front_distanace() < CRASH_DISTANCE:
             print("Crash!")
             sim_state.set_done()
-        elif self.front_distance_steps() < SAFE_DISTANCE_STEPS or self.in_disrupt:
+        elif self.front_distance_steps() < SAFE_DIST_STEPS or self.in_disrupt:
             self.decelerate()
         elif self.speed < self.pref_speed:
             self.accelerate()

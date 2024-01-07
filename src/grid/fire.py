@@ -53,8 +53,8 @@ class Land:
 
     def update_status(self, status):
         self.status = status
-        colors = {Status.TREE: "green", Status.FIRE: "red", Status.EMPTY: "white"}
-        self.shape.color(colors[status])
+        c = {Status.TREE: "green", Status.FIRE: "red", Status.EMPTY: "white"}
+        self.shape.color(c[status])
         return self
 
 

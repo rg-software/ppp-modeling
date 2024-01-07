@@ -96,8 +96,10 @@ def draw_vessel():
 sim_state = SimState.setup()
 setup_screen("Thermodynamics")
 draw_vessel()
-molecules = [Molecule.create(V_COLD, -right_wall, -R, "blue") for _ in range(N)]
-molecules.extend([Molecule.create(V_HOT, R, right_wall, "red") for _ in range(N)])
+
+mcold = [Molecule.create(V_COLD, -right_wall, -R, "blue") for _ in range(N)]
+mhot = [Molecule.create(V_HOT, R, right_wall, "red") for _ in range(N)]
+molecules = mcold + mhot
 
 writer = turtle.Turtle()
 writer.hideturtle()

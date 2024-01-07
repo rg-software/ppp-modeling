@@ -4,6 +4,7 @@ from dataclasses import dataclass
 H = 201
 W = 201
 SLEEP_MS = 20
+VIS_SLEEP_MS = 5000
 CELLSIZE = 4
 SHAPE_SIZE = CELLSIZE / 20  # turtle size
 
@@ -150,13 +151,17 @@ shapes = [[Drawer.create(x, y) for y in range(H)] for x in range(W)]
 def tick():
     if not sim_state.done:
         world_state.update()
-        if world_state.step % 50 == 0:
-            print(f"step {world_state.step}")
-            update_shapes(shapes, world_state.cells)
-            turtle.update()
-
         turtle.ontimer(tick, SLEEP_MS)
 
 
+def tick_draw():
+    if not sim_state.done:
+        print(f"step {world_state.step}")
+        update_shapes(shapes, world_state.cells)
+        turtle.update()
+        turtle.ontimer(tick_draw, VIS_SLEEP_MS)
+
+
 tick()
+tick_draw()
 turtle.done()

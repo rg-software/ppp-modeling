@@ -178,9 +178,9 @@ class WorldState:
     @classmethod
     def setup(cls):
         bugs = [Bug.create_random() for _ in range(BUGS_COUNT)]
-        plankton = [[Plankton.create(x, y) for y in range(H)] for x in range(W)]
+        plk = [[Plankton.create(x, y) for y in range(H)] for x in range(W)]
 
-        return cls(plankton, bugs).add_plankton(PLANKTON_COUNT)
+        return cls(plk, bugs).add_plankton(PLANKTON_COUNT)
 
 
 def setup_screen(title):

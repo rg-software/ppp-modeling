@@ -104,8 +104,8 @@ class WorldState:
         return best_city if will_move else city
 
     def rankings(self):
-        scores = [self.cities[x][y].population for x in range(W) for y in range(H)]
-        return sorted([v for v in scores if v > 0], reverse=True)
+        p = [self.cities[x][y].population for x in range(W) for y in range(H)]
+        return sorted([v for v in p if v > 0], reverse=True)
 
     def update(self):
         for p in self.population:

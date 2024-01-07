@@ -8,7 +8,15 @@ def accepts(rules, favstates, start, input):
         return False
 
 
-rules = {(3, "C"): 1, (1, "C"): 1, (1, "A"): 5, (5, "A"): 2, (2, "B"): 1, (2, "C"): 4}
+rules = {
+    (3, "C"): 1,
+    (1, "C"): 1,
+    (1, "A"): 5,
+    (5, "A"): 2,
+    (2, "B"): 1,
+    (2, "C"): 4,
+}
+
 favs = {2}
 start = 3
 

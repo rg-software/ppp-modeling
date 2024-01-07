@@ -4,6 +4,7 @@ from dataclasses import dataclass
 INIT_WEIGHT = 50
 POS_REWARD = 5
 NEG_REWARD = -5
+NTR_REWARD = 0
 LEARN_RATE = 0.8
 PLAYER_SYMBOL = "X"
 OPP_SYMBOL = "O" if PLAYER_SYMBOL == "X" else "X"
@@ -12,7 +13,7 @@ OPP_SYMBOL = "O" if PLAYER_SYMBOL == "X" else "X"
 @dataclass
 class Action:
     value: int
-    weight: float = 1
+    weight: float
 
 
 @dataclass
@@ -21,9 +22,9 @@ class State:
     actions: list
 
     @classmethod
-    def create(cls, value):
-        acts = [Action(i, INIT_WEIGHT) for i, v in enumerate(value) if v == " "]
-        return cls(value, acts)
+    def create(cls, val):
+        acts = [Action(i, INIT_WEIGHT) for i, v in enumerate(val) if v == " "]
+        return cls(val, acts)
 
     def random_action(self):
         w = [a.weight for a in self.actions]
@@ -89,10 +90,8 @@ def play_results():
     opp_wins = state.victory(OPP_SYMBOL)
     is_draw = not (pl_wins or opp_wins)
 
-    if pl_wins:
-        reward(history, POS_REWARD)
-    elif opp_wins:
-        reward(history, NEG_REWARD)
+    r = POS_REWARD if pl_wins else (NEG_REWARD if opp_wins else NTR_REWARD)
+    reward(history, r)
 
     return [pl_wins, opp_wins, is_draw]
 

@@ -95,7 +95,8 @@ class Grass:
     @classmethod
     def create(cls, coords):
         amount = uniform(0, 1)
-        return cls(Shape.create("circle", "lawn green", amount, coords), amount)
+        color = "lawn green"
+        return cls(Shape.create("circle", color, amount, coords), amount)
 
 
 @dataclass
@@ -129,9 +130,10 @@ class Animal:
         return self.fat > 0 and self.age <= self.cfg.max_age
 
     def deliver_at(self, coords):
-        fat_age_fail = self.fat < MIN_DELIVERY_FAT or self.age < self.cfg.delivery_age
-        fail = fat_age_fail or uniform(0, 1) > self.cfg.delivery_p
-        return None if fail else Animal.create_full(self.cfg, 0, NEWBORN_FAT, coords)
+        fat_fail = self.fat < MIN_DELIVERY_FAT
+        age_fail = self.age < self.cfg.delivery_age
+        fail = fat_fail or age_fail or uniform(0, 1) > self.cfg.delivery_p
+        return None if fail else Animal.create_newborn(self.cfg, coords)
 
     @classmethod
     def create_full(cls, cfg, age, fat, coords):
@@ -139,8 +141,13 @@ class Animal:
         return cls(shape, fat, age, cfg)
 
     @classmethod
+    def create_newborn(cls, cfg, coords):
+        return cls.create_full(cfg, 0, NEWBORN_FAT, coords)
+
+    @classmethod
     def create(cls, cfg, coords):
-        return cls.create_full(cfg, randint(0, cfg.max_age), uniform(0, 1), coords)
+        age = randint(0, cfg.max_age)
+        return cls.create_full(cfg, age, uniform(0, 1), coords)
 
 
 @dataclass
@@ -155,7 +162,8 @@ class WorldState:
         return list((key, value) for key, value in plane.items() if value)
 
     def keep_alive(self, plane):
-        plane.update({k: None for k, v in self.animals(plane) if not v.is_alive()})
+        animals = self.animals(plane)
+        plane.update({k: None for k, v in animals if not v.is_alive()})
 
     def move_and_deliver(self, plane):
         for coords, v in self.animals(plane):
@@ -201,8 +209,10 @@ class WorldState:
         rabbits = {c: None for c in coords}
         wolves = {c: None for c in coords}
 
-        rabbits.update({c: Animal.create(RabbitCfg(), c) for c in cls.coords(RABBITS)})
-        wolves.update({c: Animal.create(WolfConfig(), c) for c in cls.coords(WOLVES)})
+        r = {c: Animal.create(RabbitCfg(), c) for c in cls.coords(RABBITS)}
+        w = {c: Animal.create(WolfConfig(), c) for c in cls.coords(WOLVES)}
+        rabbits.update(r)
+        wolves.update(w)
 
         return cls(grass, rabbits, wolves, 0)
 

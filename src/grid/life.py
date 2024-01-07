@@ -97,7 +97,8 @@ def setup_screen(title):
 
 setup_screen("Life")
 sim_state = SimState.setup()
-world_state = WorldState.setup([(20, 20), (21, 20), (22, 20), (22, 21), (21, 22)])
+world_config = [(20, 20), (21, 20), (22, 20), (22, 21), (21, 22)]
+world_state = WorldState.setup(world_config)
 
 
 def tick():

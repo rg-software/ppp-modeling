@@ -27,7 +27,7 @@ def next_day(state):
 
 
 state = "sunny"
-colors = {"sunny": "yellow", "cloudy": "gray", "rainy": "black"}
+colors = {"sunny": "gold", "cloudy": "gray", "rainy": "black"}
 
 for day in range(DAYS):
     drawer = turtle.Turtle()
