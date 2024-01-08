@@ -1,12 +1,3 @@
-# TODO: for excalidraw conversion:
-# - copy SVG versions of the pictures
-# - replace everywhere in the svg "Virgil, Segoe UI Emoji" => "Virgil GS"
-# convert with
-# inkscape --export-filename=<outfile>.pdf <infile>.svg
-
-# for Pandoc 3, upgrade pandoc-fignos as explained:
-# https://github.com/tomduck/pandoc-xnos/pull/29
-
 import re
 import yaml
 import sys
@@ -16,14 +7,17 @@ from plumbum.path.utils import copy
 VAULT_DIR = r"s:\SharedAppData\Obsidian\My Vault" + "\\"
 MDFILES_PATH = VAULT_DIR + r"Projects\Amusing Programming\Modeling & Animation"
 ATTACH_PATH = VAULT_DIR + r"attachments"
+ABSTRACTS_PATH = MDFILES_PATH + "\\" + r"Chapter abstracts.md"
 ZOTERO_BIB = r"s:\SharedAppData\Zotero\My Library.bib"
 TPL_PATH = local.cwd / "book-src"
 BOOK_OUTPATH = local.cwd / "book-prod"
 FIGURES_OUTPATH = BOOK_OUTPATH / "Figures"
+ALT_TEXT_PAGES = 4
 
 pandoc = local["pandoc"]
 inkscape = local["inkscape"]
 latexmk = local["latexmk"]
+pdftk = local["pdftk"]
 
 
 def convert_image(filename):
@@ -160,3 +154,8 @@ if "-makepdf" in sys.argv:
             "-file-line-error",
             "main.tex",
         )
+
+        local.path("main.pdf").rename("main_f.pdf")
+        pdftk("A=main_f.pdf", "cat", f"r{ALT_TEXT_PAGES}-r1", "output", "alttext.pdf")
+        pdftk("A=main_f.pdf", "cat", f"1-r{ALT_TEXT_PAGES+1}", "output", "main.pdf")
+        pandoc(ABSTRACTS_PATH, "-o", "abstracts.pdf")

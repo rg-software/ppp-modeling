@@ -9,6 +9,7 @@
 \usepackage{array}
 \usepackage{caption}
 \usepackage{calc}
+\usepackage[nottoc]{tocbibind}
 \usepackage[square,numbers]{natbib}
 
 \makeatletter
@@ -83,9 +84,9 @@ $endfor$
 
 \cleardoublepage
 
-\chapter*{References}
-\addcontentsline{toc}{fm}{References}
-\markboth{References}{References}
+%\chapter*{References}
+%\addcontentsline{toc}{fm}{References}
+%\markboth{References}{References}
 \bibliographystyle{plainnat}
 \bibliography{biblio}
 
