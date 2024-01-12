@@ -161,3 +161,4 @@ if "-makepdf" in sys.argv:
         pdftk("A=main_f.pdf", "cat", f"r{ALT_TEXT_PAGES}-r1", "output", "alttext.pdf")
         pdftk("A=main_f.pdf", "cat", f"1-r{ALT_TEXT_PAGES+1}", "output", "main.pdf")
         pandoc(ABSTRACTS_PATH, "-o", "abstracts.pdf")
+        local.path("main_f.pdf").delete()
