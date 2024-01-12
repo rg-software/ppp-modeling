@@ -31,6 +31,8 @@ def convert_image(filename):
         ef.write(data)
 
     inkscape(f"--export-filename={filename}.pdf", fixed_svg)
+    local.path(f"{filename}.svg").delete()
+    local.path(f"{filename}-f.svg").delete()
 
 
 def copy_images(mdfile):

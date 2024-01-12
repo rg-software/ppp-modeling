@@ -6,7 +6,7 @@ from dataclasses import dataclass
 H = 41
 W = 41
 SLEEP_MS = 20
-CELLSIZE = 10  # pixels
+CELLSIZE = 15  # pixels
 SHAPE_SIZE = CELLSIZE / 20  # turtle size
 
 
