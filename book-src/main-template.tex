@@ -39,12 +39,13 @@
 
 \frontmatter
 
+% TITLE AND BLURB
 \halftitle{$title$}{$description$} %Placeholder for Half title
 
 %\seriespg{Series page goes here (if applicable); otherwise blank}
 
 \title{$title$}
-%\subtitle{Subtitle for the book (if Any)}
+\subtitle{$subtitle$}
 
 \edition{First Edition}
 
@@ -54,7 +55,15 @@
 
 \setcounter{page}{5}
 
-% dedication (if used)
+% AUTHOR BIO
+$bio$
+
+\bigskip
+
+% ENDORSEMENTS
+$endorsements$
+
+\bigskip
 
 \tableofcontents
 
@@ -62,8 +71,6 @@ $for(frontmatters)$
 \include{$frontmatters$/$frontmatters$}
 $endfor$
 
-% acknowledgement (if used)
-% author bio (if used)
 
 \mainmatter
 
