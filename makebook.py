@@ -5,7 +5,7 @@ from plumbum import local
 from plumbum.path.utils import copy
 
 VAULT_DIR = r"s:\SharedAppData\Obsidian\My Vault" + "\\"
-MDFILES_PATH = VAULT_DIR + r"Projects\Amusing Programming\Modeling & Animation"
+MDFILES_PATH = VAULT_DIR + r"Projects\PPP Modeling"
 ATTACH_PATH = VAULT_DIR + r"attachments"
 ABSTRACTS_PATH = MDFILES_PATH + "\\" + r"Chapter abstracts.md"
 ZOTERO_BIB = r"s:\SharedAppData\Zotero\My Library.bib"
