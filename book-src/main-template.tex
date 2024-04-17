@@ -10,6 +10,7 @@
 \usepackage{array}
 \usepackage{caption}
 \usepackage{calc}
+\usepackage{fancyhdr}
 \usepackage[nottoc]{tocbibind}
 \usepackage[square,numbers]{natbib}
 
@@ -101,6 +102,11 @@ $endfor$
 %\include{Chapters/chapter9/chapter9}
 
 \cleardoublepage
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\nouppercase{\leftmark}}
+\fancyhead[RO]{\nouppercase{\rightmark}}
 
 %\chapter*{References}
 %\addcontentsline{toc}{fm}{References}

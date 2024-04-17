@@ -8,3 +8,5 @@ book-src/main-template.fls
 book-src/main-template.idx
 book-src/main-template.log
 book-src/main-template.out
+book-src/$frontmatters$
+book-src/$mainchapters$
