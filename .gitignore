@@ -10,3 +10,6 @@ book-src/main-template.log
 book-src/main-template.out
 book-src/$frontmatters$
 book-src/$mainchapters$
+book-src/main-template.synctex.gz
+book-src/alttext.aux
+book-src/main-template.pdf

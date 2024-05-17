@@ -12,7 +12,7 @@ ZOTERO_BIB = r"s:\SharedAppData\Zotero\My Library.bib"
 TPL_PATH = local.cwd / "book-src"
 BOOK_OUTPATH = local.cwd / "book-prod"
 FIGURES_OUTPATH = BOOK_OUTPATH / "Figures"
-ALT_TEXT_PAGES = 4
+ALT_TEXT_PAGES = 5
 
 pandoc = local["pandoc"]
 inkscape = local["inkscape"]
